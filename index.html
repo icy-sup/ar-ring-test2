@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SUP AR Ring Test</title>
+  <!-- Pinned to versions used by the MindAR official quick-start. -->
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <style>
+    body { margin: 0; font-family: sans-serif; }
+    #status { position: fixed; z-index: 10; left: 16px; right: 16px; top: 16px;
+      padding: 12px; border-radius: 12px; color: #fff; background: #163c43e6;
+      text-align: center; pointer-events: none; }
+  </style>
+</head>
+<body>
+  <div id="status" role="status">請允許相機，然後對準已登記嘅圖案</div>
+  <!-- Put targets.mind and your SQUARE pixel.png beside this file. -->
+  <a-scene mindar-image="imageTargetSrc: ./targets.mind;"
+    color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights"
+    vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+    <a-assets>
+      <img id="pixel" src="./pixel.png" alt="Pixel artwork">
+    </a-assets>
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+    <a-entity id="target" mindar-image-target="targetIndex: 0">
+      <!-- z is distance above the marker; units are relative to marker width. -->
+      <a-entity position="0 0 0.2"
+        animation="property: position; from: 0 0 0.2; to: 0 0 0.4; dur: 1500; dir: alternate; loop: true; easing: easeInOutSine">
+        <a-plane src="#pixel" width="0.8" height="0.8"
+          material="shader: flat; transparent: true; side: double; alphaTest: 0.01"
+          animation="property: rotation; from: 0 0 0; to: 0 0 360; dur: 6000; loop: true; easing: linear">
+        </a-plane>
+      </a-entity>
+    </a-entity>
+  </a-scene>
+  <script>
+    const status = document.querySelector('#status');
+    const target = document.querySelector('#target');
+    const scene = document.querySelector('a-scene');
+    scene.addEventListener('arReady', () => { status.textContent = '相機已開啟：對準圖案，保持穩定'; });
+    scene.addEventListener('arError', () => { status.textContent = '未能啟動：檢查 HTTPS、相機權限、網絡及 targets.mind'; });
+    target.addEventListener('targetFound', () => { status.textContent = '搵到圖案！試吓慢慢改變角度'; });
+    target.addEventListener('targetLost', () => { status.textContent = '再對準圖案，保持穩定'; });
+    document.querySelector('#pixel').addEventListener('error', () => { status.textContent = '搵唔到 pixel.png：請檢查檔名及上載位置'; });
+  </script>
+</body>
+</html>
